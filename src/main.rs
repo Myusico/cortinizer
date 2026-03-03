@@ -9,12 +9,11 @@ mod output_manager;
 
 use cli::Args;
 use error::ProcessStatus;
-use std::process::ExitCode;
 use tracing::{error, info, warn};
 use tracing_subscriber::{fmt, EnvFilter};
 
 #[tokio::main]
-async fn main() -> ExitCode {
+async fn main() {
     // Parse command-line arguments
     let args = Args::parse_args();
 
@@ -41,7 +40,7 @@ async fn main() -> ExitCode {
         Ok(cfg) => cfg,
         Err(e) => {
             error!("Configuration error: {}", e);
-            return ExitCode::FAILURE;
+            std::process::exit(1);
         }
     };
 
@@ -53,13 +52,13 @@ async fn main() -> ExitCode {
         Ok(items) => items,
         Err(e) => {
             error!("Failed to categorize inputs: {}", e);
-            return ExitCode::FAILURE;
+            std::process::exit(1);
         }
     };
 
     if input_items.is_empty() {
         error!("No valid audio files or folders to process");
-        return ExitCode::FAILURE;
+        std::process::exit(1);
     }
 
     info!("Found {} input item(s)", input_items.len());
@@ -72,10 +71,11 @@ async fn main() -> ExitCode {
 
     // Determine exit code
     let has_failures = results.iter().any(|r| !r.is_success());
+
     if has_failures {
-        ExitCode::FAILURE
+        std::process::exit(1);
     } else {
-        ExitCode::SUCCESS
+        std::process::exit(0);
     }
 }
 
