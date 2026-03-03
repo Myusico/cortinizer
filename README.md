@@ -215,7 +215,7 @@ Third run:   cortina40_song_2.mp3
 
 ## License
 
-MIT License - See LICENSE file for details.
+This project is free for personal and open-source use. Commercial use is discouraged but not legally restricted.
 
 ## Contributing
 
