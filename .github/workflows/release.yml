@@ -1,0 +1,99 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - 'v*.*.*'
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    name: Build on ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        include:
+          - os: windows-latest
+            target: x86_64-pc-windows-msvc
+            artifact_name: cortinizer.exe
+            archive_name: cortinizer-windows
+          - os: ubuntu-latest
+            target: x86_64-unknown-linux-gnu
+            artifact_name: cortinizer
+            archive_name: cortinizer-linux
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Install Rust toolchain
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: ${{ matrix.target }}
+
+      - name: Build release binary
+        run: cargo build --release --target ${{ matrix.target }}
+
+      - name: Strip binary (Linux)
+        if: matrix.os == 'ubuntu-latest'
+        run: strip target/${{ matrix.target }}/release/cortinizer
+
+      - name: Prepare archive (Windows)
+        if: matrix.os == 'windows-latest'
+        run: |
+          mkdir dist
+          copy target\${{ matrix.target }}\release\cortinizer.exe dist\
+          copy README.md dist\
+          copy batch_scripts\*.bat dist\
+
+      - name: Prepare archive (Linux)
+        if: matrix.os == 'ubuntu-latest'
+        run: |
+          mkdir dist
+          cp target/${{ matrix.target }}/release/cortinizer dist/
+          cp README.md dist/
+
+      - name: Create zip archive (Windows)
+        if: matrix.os == 'windows-latest'
+        run: Compress-Archive -Path dist/* -DestinationPath ${{ matrix.archive_name }}.zip
+
+      - name: Create tar.gz archive (Linux)
+        if: matrix.os == 'ubuntu-latest'
+        run: tar czf ${{ matrix.archive_name }}.tar.gz -C dist .
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ matrix.archive_name }}
+          path: ${{ matrix.archive_name }}.*
+
+  release:
+    name: Create Release
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - name: Download Windows artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: cortinizer-windows
+          path: .
+
+      - name: Download Linux artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: cortinizer-linux
+          path: .
+
+      - name: Release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: |
+            cortinizer-windows.zip
+            cortinizer-linux.tar.gz
+          draft: false
+          prerelease: false
+          generate_release_notes: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

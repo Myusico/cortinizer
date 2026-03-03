@@ -1,0 +1,44 @@
+[package]
+name = "cortinizer"
+version = "0.1.0"
+edition = "2021"
+description = "A Windows-friendly drag-and-drop tool that generates tango cortinas from MP3 and FLAC files"
+authors = ["Cortinizer Team"]
+
+[dependencies]
+# CLI argument parsing
+clap = { version = "4.5", features = ["derive"] }
+
+# Async runtime
+tokio = { version = "1.35", features = ["full"] }
+
+# Async utilities
+futures = "0.3"
+
+# Error handling
+anyhow = "1.0"
+thiserror = "1.0"
+
+# File system operations
+walkdir = "2.4"
+dunce = "1.0"
+
+# Logging
+tracing = "0.1"
+tracing-subscriber = { version = "0.3", features = ["env-filter"] }
+
+# Subprocess management
+command-group = "5.0"
+
+# Metadata preservation
+audiotags = "0.5"
+
+# FFmpeg discovery
+which = "6.0"
+
+# CPU count for parallel processing
+num_cpus = "1.16"
+
+[[bin]]
+name = "cortinizer"
+path = "src/main.rs"
