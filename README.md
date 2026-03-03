@@ -17,8 +17,10 @@ A Windows-friendly drag-and-drop tool that generates tango cortinas from MP3 and
 ### Prerequisites
 
 - **FFmpeg** must be available on your system
+  - Download FFmpeg from [https://www.ffmpeg.org/download.html](https://www.ffmpeg.org/download.html)
   - **Windows**: Place `ffmpeg.exe` in the same directory as `cortinizer.exe`
   - **Linux/macOS**: Install FFmpeg through your package manager:
+
     ```bash
     # Ubuntu/Debian
     sudo apt install ffmpeg
@@ -37,10 +39,6 @@ The built binary will be at `target/release/cortinizer` (or `cortinizer.exe` on 
 
 ## Usage
 
-### Basic Usage
-
-Drop audio files or folders onto the `cortinizer.exe` executable.
-
 ### Command-Line Usage
 
 ```bash
@@ -51,7 +49,7 @@ cortinizer --length 40 song.mp3
 cortinizer --length 40 song1.mp3 song2.flac
 
 # Process folders
-cortinizer --length 40 ./music/tangos
+cortinizer --length 40 ./music/songs
 
 # Specify cortina length
 cortinizer --length 30 song.mp3   # 30 second cortina
@@ -71,6 +69,47 @@ Copy the `.bat` files from `batch_scripts/` to your program directory for quick 
 - **cortinizer60.bat** - Generate 60-second cortinas
 
 Drop files on these batch files instead of the main executable.
+
+### Linux and macOS: Folder Processing
+
+On Linux and macOS, we recommend using **folder processing** for convenience:
+
+1. **Prepare** - Copy or move all audio files you want to process into a single folder
+2. **Process** - Open a terminal and run:
+   ```bash
+   cortinizer --length 40 /path/to/your/folder
+   ```
+
+The tool will process all MP3 and FLAC files in the folder, preserving the subdirectory structure in the output.
+
+**Example:**
+
+```bash
+# macOS/Linux - Process a folder of tango music
+cortinizer --length 40 ~/Music/Tangos
+
+# All cortinas will be created in the same directory as cortinizer:
+# Tangos/cortina40_song1.mp3
+# Tangos/cortina40_song2.flac
+```
+
+**Optional: Create shell aliases for convenience**
+
+Add these to your `~/.bashrc` or `~/.zshrc`:
+
+```bash
+# Quick aliases for common cortina lengths
+alias cortina30='cortinizer --length 30'
+alias cortina40='cortinizer --length 40'
+alias cortina50='cortinizer --length 50'
+alias cortina60='cortinizer --length 60'
+```
+
+Then you can simply run:
+
+```bash
+cortina40 ~/Music/Tangos
+```
 
 ## Output
 
@@ -102,22 +141,24 @@ The same collision handling applies to folder names when processing multiple fol
 ### Fade-Out Effect
 
 Cortinas include a fade-out effect during the last 5 seconds:
+
 - **40-second cortina**: 35 seconds of full audio, 5-second fade-out
 - **30-second cortina**: 25 seconds of full audio, 5-second fade-out
-- **Cortinas ≤5 seconds**: Fade starts immediately (duration = cortina length)
 
 ### Short Tracks
 
 If a track is shorter than the target cortina length, Cortinizer will:
+
 - Use the full track duration
-- Apply fade-out only if the track is ≥5 seconds long
+- Apply fade-out for the last 5 seconds
+- **Cortinas ≤5 seconds**: Fade starts immediately (duration = cortina length)
 
 ## Supported Formats
 
 | Input Format | Output Format | Codec Used |
-|-------------|---------------|------------|
-| MP3         | MP3           | libmp3lame |
-| FLAC        | FLAC          | flac       |
+| ------------ | ------------- | ---------- |
+| MP3          | MP3           | libmp3lame |
+| FLAC         | FLAC          | flac       |
 
 ## Exit Codes
 

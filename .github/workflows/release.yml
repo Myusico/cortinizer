@@ -23,6 +23,10 @@ jobs:
             target: x86_64-unknown-linux-gnu
             artifact_name: cortinizer
             archive_name: cortinizer-linux
+          - os: macos-latest
+            target: x86_64-apple-darwin
+            artifact_name: cortinizer
+            archive_name: cortinizer-macos
 
     steps:
       - name: Checkout code
@@ -55,12 +59,23 @@ jobs:
           cp target/${{ matrix.target }}/release/cortinizer dist/
           cp README.md dist/
 
+      - name: Prepare archive (macOS)
+        if: matrix.os == 'macos-latest'
+        run: |
+          mkdir dist
+          cp target/${{ matrix.target }}/release/cortinizer dist/
+          cp README.md dist/
+
       - name: Create zip archive (Windows)
         if: matrix.os == 'windows-latest'
         run: Compress-Archive -Path dist/* -DestinationPath ${{ matrix.archive_name }}.zip
 
       - name: Create tar.gz archive (Linux)
         if: matrix.os == 'ubuntu-latest'
+        run: tar czf ${{ matrix.archive_name }}.tar.gz -C dist .
+
+      - name: Create tar.gz archive (macOS)
+        if: matrix.os == 'macos-latest'
         run: tar czf ${{ matrix.archive_name }}.tar.gz -C dist .
 
       - name: Upload artifact
@@ -86,12 +101,19 @@ jobs:
           name: cortinizer-linux
           path: .
 
+      - name: Download macOS artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: cortinizer-macos
+          path: .
+
       - name: Release
         uses: softprops/action-gh-release@v2
         with:
           files: |
             cortinizer-windows.zip
             cortinizer-linux.tar.gz
+            cortinizer-macos.tar.gz
           draft: false
           prerelease: false
           generate_release_notes: true
